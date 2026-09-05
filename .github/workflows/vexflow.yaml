@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: Apache-2.0
+name: VEX Triage
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  update:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.comment.body, '/not_affected') || startsWith(github.event.comment.body, '/affected') || startsWith(github.event.comment.body, '/fixed') || startsWith(github.event.comment.body, '/under_investigation')
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: vexflow-${{ github.repository }}
+      cancel-in-progress: false
+
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+      issues: write
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
+        with:
+          go-version: "1.26"
+          cache: false
+
+      - name: Install vexflow
+        uses: carabiner-dev/actions/install/vexflow@ade14d87ee05bd60ec9028e3f5f430ee571ac8df
+
+      - name: Process triage commands
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          vexflow update \
+            --repo carabiner-labs/baseline-init \
+            --branch main \
+            --scan=true
