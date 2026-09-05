@@ -39,5 +39,6 @@ jobs:
         run: |
           vexflow update \
             --repo carabiner-labs/baseline-init \
+            --triage-repo carabiner-labs/.vexflow \
             --branch main \
             --scan=true
